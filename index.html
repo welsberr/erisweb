@@ -1,0 +1,58 @@
+<html>
+<head>
+<title>Event Recorder Information System, Web Version</title>
+
+<script  type="text/javascript" src="eris.js"></script>
+</head>
+<body bgcolor="#ffffff">
+<div id="intro">
+  <h1>ERIS Web: Event Recorder Information System for the Web</h1>
+  <p>Page and code Copyright 2016 by Wesley R. Elsberry (MIT License)</p>
+  <p>See the <a href="http://www.onlinezoologists.com/features/software/eris.html">ERIS MS-DOS application page</a> for background. This page aims to set up an accessible event recorder based on Javascript. There is as yet neither analysis nor a data export function. To save the data, copy the text from the browser and save it as appropriate for your use.</p>
+  <p>ERIS Web will recognize "labels", which correspond to the events you want to record. Often, you
+    will want to make these single keystrokes to minimize time spent keying them in. But ERIS will
+    happily wait for you to complete a multi-character label. Don't worry, the associated timestamp
+    was locked in with the first key-press in the queue. If you entered an incorrect key, press enter
+    to finish label recognition, then delete to get rid of the latest entry in the log.</p>
+  <p>Timing in a web application is not necessarily all that precise. ERIS Web applies the
+    code discussed <a href="http://stackoverflow.com/questions/4874408/better-way-of-getting-time-in-milliseconds-in-javascript">here</a> to try to exploit better timers where they are available. Still, don't rely
+    upon time data from ERIS Web unless and until you perform testing to make sure it is suitable
+    for your application. If your application is learning a bit more about event recording, it
+    probably is fine.
+    </p>
+   
+</div>
+<div id="labels-div">
+<p>Labels:</p>
+<input id="labels-text" type="text" style="width:400;height:80;" value="a,s,d,f"></input>
+<input type="button" id="settags" value="Set Tags in ERIS" onclick="set_tags"></input>
+<p><input type="button" id="clearlog" value="Clear Log" onclick="clear_log"></input></p>
+</div>
+
+<script type="text/javascript">
+var eris = ERIS();
+function set_tags(e){
+    var labelsstr = document.getElementById('labels-text').value;
+    var labelsary = labelsstr.split(',');
+    for (var ii = 0; ii < labelsary.length; ii++){
+	eris.tokens[labelsary[ii]] = 'accept';
+    };
+    
+};
+set_tags(null);
+document.getElementById("settags").onclick = set_tags;
+function clear_log(e){
+    eris.log = [];
+    document.getElementById('eventlogger').innerHTML = "";
+}; // fxn clear_log
+
+document.getElementById("clearlog").onclick = clear_log;
+eris.installListeners();
+eris.active = true;
+console.log("ERIS set active", eris.active);
+eris.installDisplayUpdater();
+</script>
+<div id="eventlogger">
+<div>
+</body>
+</html>
