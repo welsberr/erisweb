@@ -180,6 +180,7 @@ inputCharHandler: function(e){
                 // If the character is not in the tokens set, clear the keysq and keytime
                 self.keysq = [];
                 self.keytime = null;
+		console.log("unrecognized character input. cleared.", charstr);
             }
             break;
         } // switch action
