@@ -127,8 +127,8 @@ ERIS.prototype = {
 
     },
 
-// To be called on keypress events
-inputCharHandler: function(e){
+// Check if a character is a valid initial character for any token
+isValidInitialChar: function(char) {
     // Figure out self, if needed.
     var self = this;
     if ((undefined == self.isEris) || (!self.isEris())){
@@ -136,56 +136,60 @@ inputCharHandler: function(e){
         self =  window.erisregistry['globaleris'];
     }
 
-    if (self.active){
-        // Figure out character
-        var charstr = String.fromCharCode(e.charCode);
-        var keyvalue = e.keyCode;
-        console.log("codes", charstr, keyvalue);
+    for (var token in this.tokens) {
+        if (token.startsWith(char)) {
+            return true;
+        }
+    }
+    return false;
+},
+	
+// To be called on keypress events
+inputCharHandler: function(e){
+    var self = this;
+    if ((undefined == self.isEris) || (!self.isEris())){
+        // Get it from registry
+        self =  window.erisregistry['globaleris'];
+    }
 
-        var action = self.tokens[keyvalue];
-        console.log("action for", keyvalue, action);
+    if (!self.active) return;  // Exit early if not active
 
+    var charstr = String.fromCharCode(e.charCode);
+    var keyvalue = e.keyCode;
+
+    var action = self.tokens[keyvalue];
+
+    if (action) {
         switch (action) {
         case 'accept':
-		var eventtuple = [];
-		eventtuple.push(self.keysq.join(""));
-		eventtuple.push(self.keytime);
-		self.keytime = null;
-		self.keysq = [];
-		self.log.push(eventtuple);
-		console.log("log", self.log);
-		break;
+            var eventtuple = [self.keysq.join(""), self.keytime];
+            self.log.push(eventtuple);
+            self.keysq = [];
+            self.keytime = null;
+            break;
         case 'delete':
-		e.preventDefault();
-		self.log.pop();
-		self.keytime = null;
-		console.log("log", self.log);
+            e.preventDefault();
+            self.log.pop();
+            self.keysq = [];
+            self.keytime = null;
             break;
-        default:
-            // Add it to the keysq
+        case 'activetoggle':
+            e.preventDefault();
+            self.active = !self.active;
+            self.keysq = [];
+            self.keytime = null;
+            break;
+        }
+    } else {
+        // If the queue is empty and the character is not a valid initial character, reset
+        if (self.keysq.length === 0 && !self.isValidInitialChar(charstr)) {
+            self.keysq = [];
+            self.keytime = null;
+        } else {
             self.keysq.push(charstr);
-            console.log("keysq", self.keysq);
-            // Does the joined queue have an entry in tokens?
-            var qstr = self.keysq.join("");
-            var qaction = self.tokens[qstr];
-            if ('accept' == qaction) {
-		    var eventtuple = [];
-		    eventtuple.push(self.keysq.join(""));
-		    eventtuple.push(self.keytime);
-		    self.keytime = null;
-		    self.keysq = [];
-		    self.log.push(eventtuple);
-		    console.log("log", self.log);
-	    } else {
-                // If the character is not in the tokens set, clear the keysq and keytime
-                self.keysq = [];
-                self.keytime = null;
-		console.log("unrecognized character input. cleared.", charstr);
-            }
-            break;
-        } // switch action
-    } // active
-}, // inputCharHandler
+        }
+    }
+}, // inputCharHandler()
 
     acceptQueue: function(){
 	// This function takes whatever is in the key queue,
